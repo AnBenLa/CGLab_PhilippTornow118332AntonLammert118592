@@ -25,14 +25,19 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 4.0f})}
  ,m_view_projection{utils::calculate_projection_matrix(initial_aspect_ratio)}
 {
-  initializeGeometry();
-  initializeShaderPrograms();
+	initializeSceneGraph();
+	initializeGeometry();
+	initializeShaderPrograms();
 }
 
 ApplicationSolar::~ApplicationSolar() {
   glDeleteBuffers(1, &planet_object.vertex_BO);
   glDeleteBuffers(1, &planet_object.element_BO);
   glDeleteVertexArrays(1, &planet_object.vertex_AO);
+}
+
+void ApplicationSolar::initializeSceneGraph() {
+
 }
 
 void ApplicationSolar::render() const {
