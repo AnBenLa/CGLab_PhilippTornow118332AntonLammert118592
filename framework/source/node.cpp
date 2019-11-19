@@ -1,5 +1,7 @@
 #include "node.hpp"
 
+Node::~Node() {};
+
 Node::Node(std::string name) :
 	name_(name),
 	parent_(nullptr),
@@ -19,7 +21,7 @@ Node::Node(std::string name, std::shared_ptr<Node> parent, glm::mat4x4 localTran
 	path_("/" + name)
 {};
 
-std::shared_ptr<Node>::getParent()
+std::shared_ptr<Node> Node::getParent()
 {
 	return parent_;
 }
@@ -34,10 +36,10 @@ void Node::setParent(std::shared_ptr<Node> parent)
 std::shared_ptr<Node> Node::getChildren(std::string name)
 {
 	if (name_ == name) {
-		return this;
+		return shared_from_this();;
 	} else {
 		for (auto child : children_) {
-			return child.getChildren(name);
+			return child->getChildren(name);
 		}
 	}
 	return nullptr;
@@ -75,7 +77,11 @@ void Node::setLocalTransform(glm::mat4x4 localTransform)
 
 glm::mat4x4 Node::getWorldTransform()
 {
-	return parent_->getWorldTransform()*localTransform_;
+	if (parent_ == nullptr)
+		return localTransform_;
+	else {
+		return parent_->getWorldTransform()*localTransform_;
+	}
 }
 
 void Node::setWorldTransform(glm::mat4x4 worldTransform)
@@ -85,16 +91,16 @@ void Node::setWorldTransform(glm::mat4x4 worldTransform)
 
 void Node::addChildren(std::shared_ptr<Node> child)
 {
-	children_.insert(child);
+	children_.push_back(child);
 }
 
-Node Node::removeChildren(std::string name)
+std::shared_ptr<Node> Node::removeChildren(std::string name)
 {
 	std::shared_ptr<Node> result = this->getChildren(name);
 	if (result != nullptr) {
 		std::shared_ptr<Node> parent = result->getParent();
 		if (parent != nullptr) {
-			parent->children_.erase(result);
+			parent->children_.remove(result);
 		}
 	}
 	return result;

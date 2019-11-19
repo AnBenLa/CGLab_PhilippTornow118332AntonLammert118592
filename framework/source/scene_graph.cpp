@@ -1,9 +1,18 @@
 #include "scene_graph.hpp"
 
-SceneGraph::getInstance() {
+bool SceneGraph::instanceFlag = false;
+SceneGraph* SceneGraph::instance = NULL;
+
+SceneGraph::SceneGraph(){
+	root_ = std::make_shared<Node>("root", nullptr);
+}
+
+SceneGraph* SceneGraph::getInstance() {
 	if (!instanceFlag) {
 		instance = new SceneGraph();
 		instanceFlag = true;
+		return instance;
+	} else {
 		return instance;
 	}
 }
@@ -17,7 +26,7 @@ std::string SceneGraph::getName() {
 	return name_;
 }
 
-Node SceneGraph::getRoot() {
+std::shared_ptr<Node> SceneGraph::getRoot() {
 	return root_;
 }
 
@@ -27,9 +36,9 @@ std::string SceneGraph::printGraph() {
 }
 
 void SceneGraph::setName(std::string name) {
-	this.name_ = name;
+	name_ = name;
 }
 
-void SceneGraph::setRoot(Node root) {
-	this.getRoot = root;
+void SceneGraph::setRoot(std::shared_ptr<Node> root) {
+	root_ = root;
 }

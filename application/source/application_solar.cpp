@@ -37,7 +37,43 @@ ApplicationSolar::~ApplicationSolar() {
 }
 
 void ApplicationSolar::initializeSceneGraph() {
+	//TODO is this the correct way???
+	//How to set the root node of the SceneGraph?
+	//What about the PointLightNode?
+	scenegraph_ = SceneGraph::getInstance();
 
+	model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
+
+	std::shared_ptr<Node> root = std::make_shared<Node>("root", nullptr);
+
+	auto earth_hold = std::make_shared<Node>("earth_hold", root);
+	auto earth_geom = std::make_shared<GeometryNode>("earth_geom", earth_hold, planet_model);
+
+	auto moon_hold = std::make_shared<Node>("moon_hold", earth_hold);
+	auto moon_geom = std::make_shared<GeometryNode>("moon_geom", moon_hold, planet_model);
+
+	auto merc_hold = std::make_shared<Node>("merc_hold", root);
+	auto merc_geom = std::make_shared<GeometryNode>("merc_geom", merc_hold, planet_model);
+
+	auto venus_hold = std::make_shared<Node>("venus_hold", root);
+	auto venus_geom = std::make_shared<GeometryNode>("venus_geom", venus_hold, planet_model);
+
+	auto mars_hold = std::make_shared<Node>("mars_hold", root);
+	auto mars_geom = std::make_shared<GeometryNode>("mars_geom", mars_hold, planet_model);
+
+	auto jupit_hold = std::make_shared<Node>("jupit_hold", root);
+	auto jupit_geom = std::make_shared<GeometryNode>("jupit_geom", jupit_hold, planet_model);
+
+	auto sat_hold = std::make_shared<Node>("sat_hold", root);
+	auto sat_geom = std::make_shared<GeometryNode>("sat_geom", sat_hold, planet_model);
+
+	auto uran_hold = std::make_shared<Node>("uran_hold", root);
+	auto uran_geom = std::make_shared<GeometryNode>("uran_geom", uran_hold, planet_model);
+
+	auto nept_hold = std::make_shared<Node>("nept_hold", root);
+	auto nept_geom = std::make_shared<GeometryNode>("nept_geom", nept_hold, planet_model);
+
+	auto camera = std::make_shared<CameraNode>("camera_1",root,true,true, utils::calculate_projection_matrix(initial_aspect_ratio));
 }
 
 void ApplicationSolar::render() const {

@@ -2,23 +2,23 @@
 
 CameraNode::CameraNode(std::string name, bool isPerspective, bool isEnabled, glm::mat4x4 projectionMatrix) :
 	Node(name),
-	isPerspective_ = isPerspective,
-	isEnabled_ = isEnabled,
-	projectionMatrix_ = projectionMatrix
+	isPerspective_(isPerspective),
+	isEnabled_(isEnabled),
+	projectionMatrix_(projectionMatrix)
 {}
 
 CameraNode::CameraNode(std::string name, std::shared_ptr<Node> parent, bool isPerspective, bool isEnabled, glm::mat4x4 projectionMatrix):
 	Node(name,parent),
-	isPerspective_ = isPerspective,
-	isEnabled_ = isEnabled,
-	projectionMatrix_ = projectionMatrix
+	isPerspective_(isPerspective),
+	isEnabled_(isEnabled),
+	projectionMatrix_(projectionMatrix)
 {}
 
 CameraNode::CameraNode(std::string name, std::shared_ptr<Node> parent, glm::mat4x4 localTransform, bool isPerspective, bool isEnabled, glm::mat4x4 projectionMatrix):
 	Node(name,parent,localTransform),
-	isPerspective_ = isPerspective,
-	isEnabled_ = isEnabled,
-	projectionMatrix_ = projectionMatrix
+	isPerspective_(isPerspective),
+	isEnabled_(isEnabled),
+	projectionMatrix_(projectionMatrix)
 {}
 
 bool CameraNode::getPerspective()

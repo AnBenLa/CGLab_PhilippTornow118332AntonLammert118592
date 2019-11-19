@@ -5,7 +5,7 @@
 #include<list>
 #include<glm/mat4x4.hpp>
 
-class Node {
+class Node : std::enable_shared_from_this<Node> {
 	private:
 		std::shared_ptr<Node> parent_;
 		std::list<std::shared_ptr<Node>> children_;
