@@ -3,8 +3,14 @@
 bool SceneGraph::instanceFlag = false;
 SceneGraph* SceneGraph::instance = NULL;
 
+std::ostream& operator << (std::ostream& out, std::shared_ptr<Node> node) {
+
+	return out;
+}
+
 SceneGraph::SceneGraph(){
-	root_ = std::make_shared<Node>("root", nullptr);
+	name_ = "SceneGraph_Solar";
+	root_ = std::make_shared<Node>("root");
 }
 
 SceneGraph* SceneGraph::getInstance() {
@@ -32,7 +38,12 @@ std::shared_ptr<Node> SceneGraph::getRoot() {
 
 //TODO implement print out
 std::string SceneGraph::printGraph() {
-	return "TODO";
+	std::string result = "root ";
+	for (auto child : root_->getChildren()) {
+		result = result + child->getName() + " ";
+		result = result + child->printChildren();
+	};
+	return result;
 }
 
 void SceneGraph::setName(std::string name) {

@@ -6,20 +6,26 @@ Node::Node(std::string name) :
 	name_(name),
 	parent_(nullptr),
 	path_("/"+name)
-{};
+{
+	depth_ = 0;
+};
 
 Node::Node(std::string name, std::shared_ptr<Node> parent): 
 	name_(name), 
 	parent_(parent),
 	path_("/" + name)
-{};
+{
+	depth_ = parent->getDepth() + 1;
+};
 
 Node::Node(std::string name, std::shared_ptr<Node> parent, glm::mat4x4 localTransform) : 
 	name_(name), 
 	parent_(parent), 
 	localTransform_(localTransform),
 	path_("/" + name)
-{};
+{
+	depth_ = parent->getDepth() + 1;
+};
 
 std::shared_ptr<Node> Node::getParent()
 {
@@ -35,11 +41,14 @@ void Node::setParent(std::shared_ptr<Node> parent)
 
 std::shared_ptr<Node> Node::getChildren(std::string name)
 {
-	if (name_ == name) {
-		return shared_from_this();;
-	} else {
-		for (auto child : children_) {
-			return child->getChildren(name);
+	for (auto child : children_) {
+		if (child->name_ == name) {
+			return child;
+		} else {
+			auto result = child->getChildren(name);
+			if (result != nullptr) {
+				return child->getChildren(name);
+			}
 		}
 	}
 	return nullptr;
@@ -57,12 +66,21 @@ std::string Node::getName()
 
 std::string Node::getPath()
 {
-	return path_;
+	if (parent_ == nullptr)
+		return path_;
+	else {
+		return parent_->getPath() + path_;
+	}
 }
 
 int Node::getDepth()
 {
-	return depth_;
+	if (parent_ == nullptr)
+		return 0;
+	else {
+		depth_ = parent_->getDepth() + 1;
+		return depth_;
+	}
 }
 
 glm::mat4x4 Node::getLocalTransform()
@@ -103,5 +121,14 @@ std::shared_ptr<Node> Node::removeChildren(std::string name)
 			parent->children_.remove(result);
 		}
 	}
+	return result;
+}
+
+std::string Node::printChildren() {
+	std::string result = "";
+	for (auto child : children_) {
+		result = result + child->getName() + " ";
+		result = result + child->printChildren();
+	};
 	return result;
 }

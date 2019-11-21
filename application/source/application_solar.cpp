@@ -44,39 +44,81 @@ void ApplicationSolar::initializeSceneGraph() {
 
 	model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
 
-	std::shared_ptr<Node> root = std::make_shared<Node>("root", nullptr);
+	auto root = scenegraph_->getRoot();
+
+	auto point_light = std::make_shared<LightNode>("point_light", root, 1.0, color{ 10,10,10 });
+	root->addChildren(point_light);
+	auto sun_geom = std::make_shared<GeometryNode>("sun_geom", point_light, planet_model);
+	point_light->addChildren(sun_geom);
 
 	auto earth_hold = std::make_shared<Node>("earth_hold", root);
+	root->addChildren(earth_hold);
 	auto earth_geom = std::make_shared<GeometryNode>("earth_geom", earth_hold, planet_model);
+	earth_hold->addChildren(earth_geom);
 
 	auto moon_hold = std::make_shared<Node>("moon_hold", earth_hold);
+	earth_hold->addChildren(moon_hold);
 	auto moon_geom = std::make_shared<GeometryNode>("moon_geom", moon_hold, planet_model);
+	moon_hold->addChildren(moon_geom);
 
 	auto merc_hold = std::make_shared<Node>("merc_hold", root);
+	root->addChildren(merc_hold);
 	auto merc_geom = std::make_shared<GeometryNode>("merc_geom", merc_hold, planet_model);
+	merc_hold->addChildren(merc_geom);
 
 	auto venus_hold = std::make_shared<Node>("venus_hold", root);
+	root->addChildren(venus_hold);
 	auto venus_geom = std::make_shared<GeometryNode>("venus_geom", venus_hold, planet_model);
+	venus_hold->addChildren(venus_geom);
 
 	auto mars_hold = std::make_shared<Node>("mars_hold", root);
+	root->addChildren(mars_hold);
 	auto mars_geom = std::make_shared<GeometryNode>("mars_geom", mars_hold, planet_model);
+	mars_hold->addChildren(mars_geom);
 
 	auto jupit_hold = std::make_shared<Node>("jupit_hold", root);
+	root->addChildren(jupit_hold);
 	auto jupit_geom = std::make_shared<GeometryNode>("jupit_geom", jupit_hold, planet_model);
+	jupit_hold->addChildren(jupit_geom);
 
 	auto sat_hold = std::make_shared<Node>("sat_hold", root);
+	root->addChildren(sat_hold);
 	auto sat_geom = std::make_shared<GeometryNode>("sat_geom", sat_hold, planet_model);
+	sat_hold->addChildren(sat_geom);
 
 	auto uran_hold = std::make_shared<Node>("uran_hold", root);
+	root->addChildren(uran_hold);
 	auto uran_geom = std::make_shared<GeometryNode>("uran_geom", uran_hold, planet_model);
-
+	uran_hold->addChildren(uran_geom);
+	
 	auto nept_hold = std::make_shared<Node>("nept_hold", root);
+	root->addChildren(nept_hold);
 	auto nept_geom = std::make_shared<GeometryNode>("nept_geom", nept_hold, planet_model);
+	nept_hold->addChildren(nept_geom);
 
-	auto camera = std::make_shared<CameraNode>("camera_1",root,true,true, utils::calculate_projection_matrix(initial_aspect_ratio));
+	auto camera = std::make_shared<CameraNode>("camera_1",root,true,true,utils::calculate_projection_matrix(initial_aspect_ratio));
+	root->addChildren(camera);
+
+	//test SceneGraph and Node methods
+	auto root_test = scenegraph_->getRoot();
+	auto sg_name = scenegraph_->getName();
+	auto sg_print = scenegraph_->printGraph();
+	auto earth_geom_path = earth_geom->getPath();
+	auto earth_geom_depth = earth_geom->getDepth();
+	auto moon_geom_path = moon_geom->getPath();
+	auto moon_geom_depth = moon_geom->getDepth();
+	auto test_hold = std::make_shared<Node>("Test_Hold", moon_geom);
+	moon_geom->addChildren(test_hold);
+	auto test_geom = std::make_shared<GeometryNode>("Test_Geom", test_hold, planet_model);
+	test_hold->addChildren(test_geom);
+	auto get_result = root->getChildren("Test_Hold");
+	auto rem_result = root->removeChildren("Test_Hold");
 }
 
 void ApplicationSolar::render() const {
+
+
+
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("planet").handle);
 

@@ -3,7 +3,7 @@
 
 #include "node.hpp"
 
-class CameraNode : Node {
+class CameraNode : public Node {
 	private:
 		bool isPerspective_;
 		bool isEnabled_;

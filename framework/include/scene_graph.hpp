@@ -4,6 +4,8 @@
 #include "node.hpp"
 #include "geometry_node.hpp"
 #include "camera_node.hpp"
+#include "light_node.hpp"
+#include <iostream>
 
 class SceneGraph {
 	private: 

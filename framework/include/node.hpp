@@ -14,7 +14,6 @@ class Node : std::enable_shared_from_this<Node> {
 		int depth_ = 0;
 		glm::mat4x4 localTransform_;
 		glm::mat4x4 worldTransform_;
-	
 	public:
 		Node(std::string name);
 		Node(std::string name, std::shared_ptr<Node> parent);
@@ -33,7 +32,7 @@ class Node : std::enable_shared_from_this<Node> {
 		void setWorldTransform(glm::mat4x4 worldTransform);
 		void addChildren(std::shared_ptr<Node> child);
 		std::shared_ptr<Node> removeChildren(std::string name);
-
+		std::string printChildren();
 };
 
 #endif

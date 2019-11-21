@@ -4,7 +4,7 @@
 #include<node.hpp>
 #include<model.hpp>
 
-class GeometryNode : Node {
+class GeometryNode : public Node {
 	private:
 		model geometry_;
 	public:
