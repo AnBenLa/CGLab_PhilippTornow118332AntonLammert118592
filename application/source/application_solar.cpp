@@ -50,51 +50,70 @@ void ApplicationSolar::initializeSceneGraph() {
 	root->addChildren(point_light);
 	auto sun_geom = std::make_shared<GeometryNode>("sun_geom", point_light, planet_model);
 	point_light->addChildren(sun_geom);
+	sun_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.5f,0.5f,0.5f }));
 
 	auto earth_hold = std::make_shared<Node>("earth_hold", root);
 	root->addChildren(earth_hold);
+	earth_hold->setLocalTransform(glm::translate({}, glm::fvec3{1.3f,0.0f,0.0f}));
 	auto earth_geom = std::make_shared<GeometryNode>("earth_geom", earth_hold, planet_model);
 	earth_hold->addChildren(earth_geom);
+	earth_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.1f,0.1f,0.1f }));
 
 	auto moon_hold = std::make_shared<Node>("moon_hold", earth_hold);
 	earth_hold->addChildren(moon_hold);
+	moon_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 0.15f,0.0f,0.0f }));
 	auto moon_geom = std::make_shared<GeometryNode>("moon_geom", moon_hold, planet_model);
 	moon_hold->addChildren(moon_geom);
+	moon_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.05f,0.05f,0.05f }));
 
 	auto merc_hold = std::make_shared<Node>("merc_hold", root);
 	root->addChildren(merc_hold);
+	merc_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 1.6f,0.0f,0.0f }));
 	auto merc_geom = std::make_shared<GeometryNode>("merc_geom", merc_hold, planet_model);
 	merc_hold->addChildren(merc_geom);
+	merc_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.125f,0.125f,0.125f }));
 
 	auto venus_hold = std::make_shared<Node>("venus_hold", root);
 	root->addChildren(venus_hold);
+	venus_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 1.0f,0.0f,0.0f }));
 	auto venus_geom = std::make_shared<GeometryNode>("venus_geom", venus_hold, planet_model);
 	venus_hold->addChildren(venus_geom);
+	venus_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.075f,0.075f,0.075f }));
 
 	auto mars_hold = std::make_shared<Node>("mars_hold", root);
 	root->addChildren(mars_hold);
+	mars_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 2.0f,0.0f,0.0f }));
 	auto mars_geom = std::make_shared<GeometryNode>("mars_geom", mars_hold, planet_model);
 	mars_hold->addChildren(mars_geom);
+	mars_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.175f,0.175f,0.175f }));
 
 	auto jupit_hold = std::make_shared<Node>("jupit_hold", root);
 	root->addChildren(jupit_hold);
+	jupit_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 2.5f,0.0f,0.0f }));
 	auto jupit_geom = std::make_shared<GeometryNode>("jupit_geom", jupit_hold, planet_model);
 	jupit_hold->addChildren(jupit_geom);
+	jupit_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.2f,0.2f,0.2f }));
 
 	auto sat_hold = std::make_shared<Node>("sat_hold", root);
 	root->addChildren(sat_hold);
+	sat_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 2.6f,0.0f,0.0f }));
 	auto sat_geom = std::make_shared<GeometryNode>("sat_geom", sat_hold, planet_model);
 	sat_hold->addChildren(sat_geom);
+	sat_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.15f,0.15f,0.15f }));
 
 	auto uran_hold = std::make_shared<Node>("uran_hold", root);
 	root->addChildren(uran_hold);
+	uran_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 0.7f,0.0f,0.0f }));
 	auto uran_geom = std::make_shared<GeometryNode>("uran_geom", uran_hold, planet_model);
 	uran_hold->addChildren(uran_geom);
+	uran_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.125f,0.125f,0.125f }));
 	
 	auto nept_hold = std::make_shared<Node>("nept_hold", root);
 	root->addChildren(nept_hold);
+	jupit_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 2.8f,0.0f,0.0f }));
 	auto nept_geom = std::make_shared<GeometryNode>("nept_geom", nept_hold, planet_model);
 	nept_hold->addChildren(nept_geom);
+	nept_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.1f,0.1f,0.1f }));
 
 	auto camera = std::make_shared<CameraNode>("camera_1",root,true,true,utils::calculate_projection_matrix(initial_aspect_ratio));
 	root->addChildren(camera);
@@ -117,26 +136,57 @@ void ApplicationSolar::initializeSceneGraph() {
 
 void ApplicationSolar::render() const {
 
+	//traverse scenegraph until a geometry node is found
+	//if a geometry node is found compute the worldtransform and add the object and draw it
+	auto root = scenegraph_->getRoot();
+	std::string planets[] = {
+		"sun_geom",
+		"uran_geom",
+		"venus_geom",
+		"earth_geom",
+		"moon_geom",
+		"merc_geom",
+		"mars_geom", 
+		"jupit_geom", 
+		"sat_geom", 
+		"nept_geom" };
 
+	for (int i = 0; i < 10; ++i) {
+		auto planet = root->getChildren(planets[i]);
+		glm::mat4 pl = planet->getParent()->getLocalTransform();
+		glm::mat4 rm = {};
+		if (i != 4) {
+			rm = glm::rotate(glm::mat4x4{}, 0.0005f + (10-i)*0.00001f, glm::fvec3{ 0.0f,1.0f,0.0f });
+		}
+		else {
+			rm = glm::rotate(glm::mat4x4{}, 0.005f, glm::fvec3{ 0.0f,1.0f,0.0f });
+		}
+		planet->getParent()->setLocalTransform(rm*pl);
+	
+		//glm::mat4 rot_hold = planet->getParent()->getLocalTransform();
+		//planet->getParent()->setLocalTransform(glm::rotate(rot_hold, float(glfwGetTime()), glm::fvec3{ 0.0f,1.0f,0.0f }));
+		glm::mat4x4 model_matrix = planet->getWorldTransform();
+		//glm::fmat4 model_matrix = glm::rotate(world_transform, float(glfwGetTime() + i), glm::fvec3{ 0.0f,1.0f,0.0f });
 
-  // bind shader to upload uniforms
-  glUseProgram(m_shaders.at("planet").handle);
+		// bind shader to upload uniforms
+		glUseProgram(m_shaders.at("planet").handle);
 
-  glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
-  model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f});
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
-                     1, GL_FALSE, glm::value_ptr(model_matrix));
+		//glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()), glm::fvec3{ 0.0f, 1.0f, 0.0f });
+		//model_matrix = glm::translate(model_matrix, glm::fvec3{ 0.0f-i, 0.0f, -1.0f });
+		glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
+			1, GL_FALSE, glm::value_ptr(model_matrix));
 
-  // extra matrix for normal transformation to keep them orthogonal to surface
-  glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
-                     1, GL_FALSE, glm::value_ptr(normal_matrix));
+		// extra matrix for normal transformation to keep them orthogonal to surface
+		glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
+		glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
+			1, GL_FALSE, glm::value_ptr(normal_matrix));
 
-  // bind the VAO to draw
-  glBindVertexArray(planet_object.vertex_AO);
+		// bind the VAO to draw
+		glBindVertexArray(planet_object.vertex_AO);
 
-  // draw bound vertex array using bound shader
-  glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+		// draw bound vertex array using bound shader
+		glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+	}
 }
 
 void ApplicationSolar::uploadView() {
