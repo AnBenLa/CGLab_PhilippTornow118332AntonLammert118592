@@ -4,6 +4,7 @@
 #include<string>
 #include<list>
 #include<glm/mat4x4.hpp>
+#include<memory>
 
 class Node : std::enable_shared_from_this<Node> {
 	private:

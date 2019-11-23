@@ -115,7 +115,7 @@ void ApplicationSolar::initializeSceneGraph() {
 	nept_hold->addChildren(nept_geom);
 	nept_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.1f,0.1f,0.1f }));
 
-	auto camera = std::make_shared<CameraNode>("camera_1",root,true,true,utils::calculate_projection_matrix(initial_aspect_ratio));
+	auto camera = std::make_shared<CameraNode>("camera_1",root,true,true,m_view_projection);//utils::calculate_projection_matrix(initial_aspect_ratio));
 	root->addChildren(camera);
 
 	//test SceneGraph and Node methods
@@ -156,7 +156,7 @@ void ApplicationSolar::render() const {
 		glm::mat4 pl = planet->getParent()->getLocalTransform();
 		glm::mat4 rm = {};
 		if (i != 4) {
-			rm = glm::rotate(glm::mat4x4{}, 0.0005f + (10-i)*0.00001f, glm::fvec3{ 0.0f,1.0f,0.0f });
+			rm = glm::rotate(glm::mat4x4{}, 0.0005f + (float)(10-i)*0.00001f, glm::fvec3{ 0.0f,1.0f,0.0f });
 		}
 		else {
 			rm = glm::rotate(glm::mat4x4{}, 0.005f, glm::fvec3{ 0.0f,1.0f,0.0f });
@@ -274,11 +274,27 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
     m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.1f});
     uploadView();
   }
+
+  if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)){
+  	m_view_transform = glm::translate(m_view_transform, glm::fvec3{-0.1f,0.0f,0.0f});
+  	uploadView();
+  }
+  else if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)){
+  	m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.1f,0.0f,0.0f});
+  	uploadView();
+  }
 }
 
 //handle delta mouse movement input
 void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
+  
+  float angle_pan = -(float) pos_x/10;
+  float angle_tilt = -(float) pos_y/10;
+
   // mouse handling
+	m_view_transform = glm::rotate(m_view_transform, glm::radians(angle_pan),glm::vec3{0,1,0});
+	m_view_transform = glm::rotate(m_view_transform ,glm::radians(angle_tilt),glm::vec3{1,0,0});
+	uploadView();
 }
 
 //handle resizing

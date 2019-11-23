@@ -8,7 +8,7 @@ Node::Node(std::string name) :
 	path_("/"+name)
 {
 	depth_ = 0;
-};
+}
 
 Node::Node(std::string name, std::shared_ptr<Node> parent): 
 	name_(name), 
@@ -16,7 +16,7 @@ Node::Node(std::string name, std::shared_ptr<Node> parent):
 	path_("/" + name)
 {
 	depth_ = parent->getDepth() + 1;
-};
+}
 
 Node::Node(std::string name, std::shared_ptr<Node> parent, glm::mat4x4 localTransform) : 
 	name_(name), 
