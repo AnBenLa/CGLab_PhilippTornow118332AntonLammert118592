@@ -1,6 +1,6 @@
 #include "node.hpp"
 
-Node::~Node() {};
+Node::~Node() {}
 
 Node::Node(std::string name) :
 	name_(name),
@@ -10,28 +10,31 @@ Node::Node(std::string name) :
 	depth_ = 0;
 }
 
+// constructor and implicitly appending to node
 Node::Node(std::string name, std::shared_ptr<Node> parent): 
 	name_(name), 
-	parent_(parent),
-	path_("/" + name)
+	parent_(parent)
 {
+	path_ = getPath();
 	depth_ = parent->getDepth() + 1;
 }
 
+// constructor, appending to node and set local transform
 Node::Node(std::string name, std::shared_ptr<Node> parent, glm::mat4x4 localTransform) : 
 	name_(name), 
 	parent_(parent), 
-	localTransform_(localTransform),
-	path_("/" + name)
+	localTransform_(localTransform)
 {
 	depth_ = parent->getDepth() + 1;
-};
+	path_ = getPath();
+}
 
 std::shared_ptr<Node> Node::getParent()
 {
 	return parent_;
 }
 
+// append node to another node
 void Node::setParent(std::shared_ptr<Node> parent)
 {
 	parent_ = parent;
@@ -39,6 +42,7 @@ void Node::setParent(std::shared_ptr<Node> parent)
 	path_ = parent_->getPath() + "/" + name_;
 }
 
+// recursively gather all childrens from given node; returns the node their children
 std::shared_ptr<Node> Node::getChildren(std::string name)
 {
 	for (auto child : children_) {
@@ -64,15 +68,18 @@ std::string Node::getName()
 	return name_;
 }
 
+// returns path by recursively call getPath from parent
 std::string Node::getPath()
 {
 	if (parent_ == nullptr)
 		return path_;
 	else {
-		return parent_->getPath() + path_;
+		path_ = parent_->getPath() + path_;
+		return path_;
 	}
 }
 
+// returns depth by recursively call getDepth from parent
 int Node::getDepth()
 {
 	if (parent_ == nullptr)
@@ -93,6 +100,7 @@ void Node::setLocalTransform(glm::mat4x4 localTransform)
 	localTransform_ = localTransform;
 }
 
+// calculates the worldtransform by multiplying the local transforms from root to leave
 glm::mat4x4 Node::getWorldTransform()
 {
 	if (parent_ == nullptr)
@@ -112,6 +120,7 @@ void Node::addChildren(std::shared_ptr<Node> child)
 	children_.push_back(child);
 }
 
+// uses getChildren to remove the node
 std::shared_ptr<Node> Node::removeChildren(std::string name)
 {
 	std::shared_ptr<Node> result = this->getChildren(name);

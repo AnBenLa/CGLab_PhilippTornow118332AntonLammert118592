@@ -8,9 +8,10 @@
 
 class Node : std::enable_shared_from_this<Node> {
 	private:
+		std::string name_;
 		std::shared_ptr<Node> parent_;
 		std::list<std::shared_ptr<Node>> children_;
-		std::string name_;
+
 		std::string path_;
 		int depth_ = 0;
 		glm::mat4x4 localTransform_;

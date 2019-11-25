@@ -40,12 +40,15 @@ void ApplicationSolar::initializeSceneGraph() {
 	//TODO is this the correct way???
 	//How to set the root node of the SceneGraph?
 	//What about the PointLightNode?
+
+	// init singleton
 	scenegraph_ = SceneGraph::getInstance();
 
+	// call model_loader
 	model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
-
 	auto root = scenegraph_->getRoot();
 
+	// init all planets and holer with transformations as well as geometry
 	auto point_light = std::make_shared<LightNode>("point_light", root, 1.0, color{ 10,10,10 });
 	root->addChildren(point_light);
 	auto sun_geom = std::make_shared<GeometryNode>("sun_geom", point_light, planet_model);
@@ -115,10 +118,11 @@ void ApplicationSolar::initializeSceneGraph() {
 	nept_hold->addChildren(nept_geom);
 	nept_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.1f,0.1f,0.1f }));
 
+	// init camera node
 	auto camera = std::make_shared<CameraNode>("camera_1",root,true,true,m_view_projection);//utils::calculate_projection_matrix(initial_aspect_ratio));
 	root->addChildren(camera);
 
-	//test SceneGraph and Node methods
+	//test SceneGraph and node methods
 	auto root_test = scenegraph_->getRoot();
 	auto sg_name = scenegraph_->getName();
 	auto sg_print = scenegraph_->printGraph();
@@ -151,6 +155,7 @@ void ApplicationSolar::render() const {
 		"sat_geom", 
 		"nept_geom" };
 
+	// render every planet
 	for (int i = 0; i < 10; ++i) {
 		auto planet = root->getChildren(planets[i]);
 		glm::mat4 pl = planet->getParent()->getLocalTransform();
@@ -266,6 +271,8 @@ void ApplicationSolar::initializeGeometry() {
 ///////////////////////////// callback functions for window events ////////////
 // handle key input
 void ApplicationSolar::keyCallback(int key, int action, int mods) {
+
+// differentiate inputs and apply corresponding translation
   if (key == GLFW_KEY_W  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.1f});
     uploadView();
@@ -287,13 +294,20 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
 
 //handle delta mouse movement input
 void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
-  
+
+// calculate pan and tilt from mouse input  
   float angle_pan = -(float) pos_x/10;
   float angle_tilt = -(float) pos_y/10;
 
-  // mouse handling
+// use the higher value and apply the rotation around this value
+  if(std::abs(angle_pan)>std::abs(angle_tilt))
+  {
 	m_view_transform = glm::rotate(m_view_transform, glm::radians(angle_pan),glm::vec3{0,1,0});
+  } else {
 	m_view_transform = glm::rotate(m_view_transform ,glm::radians(angle_tilt),glm::vec3{1,0,0});
+  }
+
+  // update ViewMatrix
 	uploadView();
 }
 
