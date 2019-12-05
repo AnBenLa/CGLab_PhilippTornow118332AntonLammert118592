@@ -153,22 +153,36 @@ void ApplicationSolar::initializeSceneGraph() {
 void ApplicationSolar::uploadView() {
   // vertices are transformed in camera space, so camera transform must be inverted
   glm::fmat4 view_matrix = glm::inverse(m_view_transform);
+
+  glUseProgram(m_shaders.at("stars").handle);
+  
   // upload matrix to gpu
+  glUniformMatrix4fv(m_shaders.at("stars").u_locs.at("ModelViewMatrix"),
+  					 1, GL_FALSE, glm::value_ptr(view_matrix));
+
+  glUseProgram(m_shaders.at("planet").handle);
+
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
 }
 
 void ApplicationSolar::uploadProjection() {
+  
+  // bind shader to which to upload unforms
+  glUseProgram(m_shaders.at("stars").handle);
+  
   // upload matrix to gpu
+  glUniformMatrix4fv(m_shaders.at("stars").u_locs.at("ProjectionMatrix"),
+  					 1, GL_FALSE, glm::value_ptr(m_view_projection));
+
+  glUseProgram(m_shaders.at("planet").handle);
+
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
 }
 
 // update uniform locations
 void ApplicationSolar::uploadUniforms() { 
-  // bind shader to which to upload unforms
-  glUseProgram(m_shaders.at("planet").handle);
-  // upload uniform values to new locations
   uploadView();
   uploadProjection();
 }
@@ -176,6 +190,7 @@ void ApplicationSolar::uploadUniforms() {
 ///////////////////////////// intialisation functions /////////////////////////
 // load shader sources
 void ApplicationSolar::initializeShaderPrograms() {
+
   // store shader program objects in container
   m_shaders.emplace("planet", shader_program{{{GL_VERTEX_SHADER,m_resource_path + "shaders/simple.vert"},
                                            {GL_FRAGMENT_SHADER, m_resource_path + "shaders/simple.frag"}}});
@@ -281,21 +296,13 @@ void ApplicationSolar::initializeOrbits(){
 
 void ApplicationSolar::render()const{
 
-	glBindBuffer(GL_ARRAY_BUFFER,stars_object.vertex_BO);
 	renderStars();
-	glBindBuffer(GL_ARRAY_BUFFER,planet_object.vertex_BO);
 	renderPlanets();
 }
 
 void ApplicationSolar::renderStars()const{
 
 	glUseProgram(m_shaders.at("stars").handle);	
-
-	glUniformMatrix4fv(m_shaders.at("stars").u_locs.at("ModelViewMatrix"),
-		1, GL_FALSE, glm::value_ptr(m_view_transform));
-
-	glUniformMatrix4fv(m_shaders.at("stars").u_locs.at("ProjectionMatrix"),
-		1, GL_FALSE, glm::value_ptr(m_view_projection));
 
 	// bind the VAO to draw
 	glBindVertexArray(stars_object.vertex_AO);
