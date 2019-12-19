@@ -108,17 +108,17 @@ void ApplicationSolar::initializeSceneGraph() {
 
 	auto jupit_hold = std::make_shared<Node>("jupit_hold", root);
 	root->addChildren(jupit_hold);
-	jupit_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 2.5f,0.0f,0.0f }));
+	jupit_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 3.4f,0.0f,0.0f }));
 	auto jupit_geom = std::make_shared<GeometryNode>("jupit_geom", jupit_hold, planet_model);
 	jupit_hold->addChildren(jupit_geom);
 	jupit_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.2f,0.2f,0.2f }));
 
 	auto sat_hold = std::make_shared<Node>("sat_hold", root);
 	root->addChildren(sat_hold);
-	sat_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 2.6f,0.0f,0.0f }));
+	sat_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 2.5f,0.0f,0.0f }));
 	auto sat_geom = std::make_shared<GeometryNode>("sat_geom", sat_hold, planet_model);
 	sat_hold->addChildren(sat_geom);
-	sat_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.15f,0.15f,0.15f }));
+	sat_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.1f,0.1f,0.1f }));
 
 	auto uran_hold = std::make_shared<Node>("uran_hold", root);
 	root->addChildren(uran_hold);
