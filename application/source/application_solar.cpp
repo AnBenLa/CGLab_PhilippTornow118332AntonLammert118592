@@ -389,7 +389,7 @@ void ApplicationSolar::render()const{
 	renderOrbits();
 }
 
-void ApplicationSolar::renderStars() const{
+void ApplicationSolar::renderStars()const{
 
 	glUseProgram(m_shaders.at("stars").handle);	
 
@@ -416,6 +416,18 @@ void ApplicationSolar::renderPlanets()const{
 		"jupit_geom", 
 		"sat_geom", 
 		"nept_geom" };
+
+	std::map<std::string,color> color_map;
+	color_map.insert({ "sun_geom",{255, 255, 0} });
+	color_map.insert({ "uran_geom",{188, 255, 252}});
+	color_map.insert({ "venus_geom",{251, 213, 152} });
+	color_map.insert({ "earth_geom",{78, 153, 255} });
+	color_map.insert({ "moon_geom",{219, 219, 219} });
+	color_map.insert({ "merc_geom",{157, 157, 157} });
+	color_map.insert({ "mars_geom",{229, 141, 0} });
+	color_map.insert({ "jupit_geom",{255, 207, 128} });
+	color_map.insert({ "sat_geom",{229, 212, 186} });
+	color_map.insert({ "nept_geom",{99, 204, 251} });
 
 	// render every planet
 	for (int i = 0; i < 10; ++i) {
@@ -450,6 +462,10 @@ void ApplicationSolar::renderPlanets()const{
 
 		// bind the VAO to draw
 		glBindVertexArray(planet_object.vertex_AO);
+
+		int planetColorLocation = glGetUniformLocation(m_shaders.at("planet").handle, "planetColor");
+		color planetColor = color_map[planets[i]];
+		glUniform3f(planetColorLocation,planetColor.r/255.0f, planetColor.g/255.0f, planetColor.b/255.0f);
 
 		// draw bound vertex array using bound shader
 		glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
