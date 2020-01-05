@@ -26,6 +26,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,orbits_object{}
  ,m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 4.0f})}
  ,m_view_projection{utils::calculate_projection_matrix(initial_aspect_ratio)}
+ ,m_current_planet_shader{"toon"}
 {
 	initializeSceneGraph();
 	initializeStars();
@@ -165,9 +166,9 @@ void ApplicationSolar::uploadView() {
   					 1, GL_FALSE, glm::value_ptr(view_matrix));
 
   
-  glUseProgram(m_shaders.at("planet").handle);
+  glUseProgram(m_shaders.at(m_current_planet_shader).handle);
 
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
+  glUniformMatrix4fv(m_shaders.at(m_current_planet_shader).u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
 
 
@@ -187,9 +188,9 @@ void ApplicationSolar::uploadProjection() {
   glUniformMatrix4fv(m_shaders.at("stars").u_locs.at("ProjectionMatrix"),
   					 1, GL_FALSE, glm::value_ptr(m_view_projection));
 
-  glUseProgram(m_shaders.at("planet").handle);
+  glUseProgram(m_shaders.at(m_current_planet_shader).handle);
 
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ProjectionMatrix"),
+  glUniformMatrix4fv(m_shaders.at(m_current_planet_shader).u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
 
   glUseProgram(m_shaders.at("orbits").handle);
@@ -217,6 +218,16 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["ViewMatrix"] = -1;
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
 
+  // store toon shader
+  m_shaders.emplace("toon", shader_program{{{GL_VERTEX_SHADER, m_resource_path + "shaders/toon.vert"},
+										  {GL_FRAGMENT_SHADER, m_resource_path + "shaders/toon.frag"}}});
+
+  // request uniform locations for shader program
+  m_shaders.at("toon").u_locs["NormalMatrix"] = -1;
+  m_shaders.at("toon").u_locs["ModelMatrix"] = -1;
+  m_shaders.at("toon").u_locs["ViewMatrix"] = -1;
+  m_shaders.at("toon").u_locs["ProjectionMatrix"] = -1;
+
   // store star shader
   m_shaders.emplace("stars", shader_program{{{GL_VERTEX_SHADER,m_resource_path + "shaders/vao.vert"},
                                            {GL_FRAGMENT_SHADER, m_resource_path + "shaders/vao.frag"}}});
@@ -235,6 +246,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("orbits").u_locs["ViewMatrix"] = -1;
   m_shaders.at("orbits").u_locs["ProjectionMatrix"] = -1;
 }
+
 
 void ApplicationSolar::initializeStars(){
 
@@ -385,7 +397,7 @@ void ApplicationSolar::initializeOrbits(){
 void ApplicationSolar::render()const{
 
 	renderStars();
-	renderPlanets();
+	renderPlanets(m_current_planet_shader);
 	renderOrbits();
 }
 
@@ -401,7 +413,7 @@ void ApplicationSolar::renderStars()const{
 
 }
 
-void ApplicationSolar::renderPlanets()const{
+void ApplicationSolar::renderPlanets(std::string const& planet_shader)const{
 
 	auto root = scenegraph_->getRoot();
 
@@ -445,20 +457,20 @@ void ApplicationSolar::renderPlanets()const{
 		glm::mat4x4 model_matrix = planet->getWorldTransform();
 
 		// bind shader to upload uniforms
-		glUseProgram(m_shaders.at("planet").handle);
+		glUseProgram(m_shaders.at(planet_shader).handle);
 
-		glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
+		glUniformMatrix4fv(m_shaders.at(planet_shader).u_locs.at("ModelMatrix"),
 			1, GL_FALSE, glm::value_ptr(model_matrix));
 
 		// extra matrix for normal transformation to keep them orthogonal to surface
 		glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
-		glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
+		glUniformMatrix4fv(m_shaders.at(planet_shader).u_locs.at("NormalMatrix"),
 			1, GL_FALSE, glm::value_ptr(normal_matrix));
 
 		// bind the VAO to draw
 		glBindVertexArray(planet_object.vertex_AO);
 
-		int planetColorLocation = glGetUniformLocation(m_shaders.at("planet").handle, "planetColor");
+		int planetColorLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle, "planetColor");
 		color planetColor = color_map[planets[i]];
 		glUniform3f(planetColorLocation,planetColor.r/255.0f, planetColor.g/255.0f, planetColor.b/255.0f);
 
@@ -469,16 +481,16 @@ void ApplicationSolar::renderPlanets()const{
 		float light_intensity = light->getLightIntensity();
 		glm::fvec4 light_position = light->getWorldTransform()*glm::fvec4(0.0f,0.0f,0.0f,1.0f);
 		
-		int lightPositionLocation = glGetUniformLocation(m_shaders.at("planet").handle, "light_position");
+		int lightPositionLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle, "light_position");
 		glUniform3f(lightPositionLocation, light_position.x, light_position.y, light_position.z);
 		
-		int lightIntensityLocation = glGetUniformLocation(m_shaders.at("planet").handle, "light_strength");
+		int lightIntensityLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle, "light_strength");
 		glUniform1f(lightIntensityLocation, light_intensity);
 
-		int lightColorLocation = glGetUniformLocation(m_shaders.at("planet").handle, "light_color");
+		int lightColorLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle, "light_color");
 		glUniform3f(lightColorLocation, light_color.r/255.0f, light_color.g/255.0f, light_color.b/255.0f);
 
-		int ambientStrengthLocation = glGetUniformLocation(m_shaders.at("planet").handle, "ambient_strength");
+		int ambientStrengthLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle, "ambient_strength");
 		
 		if (i == 0) {
 			glUniform1f(ambientStrengthLocation, 1.0);
@@ -554,6 +566,15 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   }
   else if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)){
   	m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.1f,0.0f,0.0f});
+  	uploadView();
+  }
+
+  if (key == GLFW_KEY_1 && (action == GLFW_PRESS)){
+  	m_current_planet_shader = "planet";
+  	uploadView();
+  }
+  else if (key == GLFW_KEY_2 && (action == GLFW_PRESS)){
+  	m_current_planet_shader = "toon";
   	uploadView();
   }
 }
