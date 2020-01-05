@@ -26,7 +26,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,orbits_object{}
  ,m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 4.0f})}
  ,m_view_projection{utils::calculate_projection_matrix(initial_aspect_ratio)}
- ,m_current_planet_shader{"toon"}
+ ,m_current_planet_shader{"planet"}
 {
 	initializeSceneGraph();
 	initializeStars();
@@ -166,11 +166,15 @@ void ApplicationSolar::uploadView() {
   					 1, GL_FALSE, glm::value_ptr(view_matrix));
 
   
-  glUseProgram(m_shaders.at(m_current_planet_shader).handle);
+  glUseProgram(m_shaders.at("toon").handle);
 
-  glUniformMatrix4fv(m_shaders.at(m_current_planet_shader).u_locs.at("ViewMatrix"),
+  glUniformMatrix4fv(m_shaders.at("toon").u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
 
+  glUseProgram(m_shaders.at("planet").handle);
+
+  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
+                     1, GL_FALSE, glm::value_ptr(view_matrix));
 
   glUseProgram(m_shaders.at("orbits").handle);
 
@@ -188,10 +192,16 @@ void ApplicationSolar::uploadProjection() {
   glUniformMatrix4fv(m_shaders.at("stars").u_locs.at("ProjectionMatrix"),
   					 1, GL_FALSE, glm::value_ptr(m_view_projection));
 
-  glUseProgram(m_shaders.at(m_current_planet_shader).handle);
+  glUseProgram(m_shaders.at("toon").handle);
 
-  glUniformMatrix4fv(m_shaders.at(m_current_planet_shader).u_locs.at("ProjectionMatrix"),
+  glUniformMatrix4fv(m_shaders.at("toon").u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
+
+  glUseProgram(m_shaders.at("planet").handle);
+
+  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ProjectionMatrix"),
+                     1, GL_FALSE, glm::value_ptr(m_view_projection));
+
 
   glUseProgram(m_shaders.at("orbits").handle);
 

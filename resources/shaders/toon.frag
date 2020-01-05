@@ -17,7 +17,7 @@ void main() {
   vec3 specular_color = vec3(1.0,1.0,1.0);
 
   vec4 outline_color = vec4(1.0,0.0,0.0,1.0);
-  float outline_thickness = 3;
+  float outline_thickness = 0.3;
 
   float diffuse_reflection_factor = 0.9;
   float specular_reflection_factor = 0.9;
@@ -38,7 +38,7 @@ void main() {
   vec3 diffuse = diffuse_light_strength * light_color;
   vec3 specular =  specular_light_strength * specular_color;
 
-  if(dot(normal,view_Direction) > outline_thickness){
+  if(abs(dot(normal,view_Direction)) < outline_thickness){
     out_Color = outline_color;
   }
   else{
