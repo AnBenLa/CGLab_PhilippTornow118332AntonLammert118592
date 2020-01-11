@@ -51,6 +51,6 @@ void main() {
     else 
       diffuse = 0.1 * light_color;
 
-    out_Color = vec4((ambient + diffuse) * planetColor + specular * light_color, 1.0);
+    out_Color = vec4((ambient + diffuse) * planetColor, 1.0);
   }
 }

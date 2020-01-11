@@ -166,15 +166,15 @@ void ApplicationSolar::uploadView() {
   					 1, GL_FALSE, glm::value_ptr(view_matrix));
 
   
-  glUseProgram(m_shaders.at("toon").handle);
+  glUseProgram(m_shaders.at(m_current_planet_shader).handle);
 
-  glUniformMatrix4fv(m_shaders.at("toon").u_locs.at("ViewMatrix"),
+  glUniformMatrix4fv(m_shaders.at(m_current_planet_shader).u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
 
-  glUseProgram(m_shaders.at("planet").handle);
+  //glUseProgram(m_shaders.at("planet").handle);
 
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
-                     1, GL_FALSE, glm::value_ptr(view_matrix));
+  //glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
+  //                   1, GL_FALSE, glm::value_ptr(view_matrix));
 
   glUseProgram(m_shaders.at("orbits").handle);
 
