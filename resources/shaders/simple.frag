@@ -1,10 +1,12 @@
 #version 150
 
 in vec3 pass_Normal, pass_Position, pass_Camera_Position;
-in mat4 passViewMatrix;
+in mat4 pass_ViewMatrix;
+in vec2 pass_TexCoord;
 
 out vec4 out_Color;
 
+uniform sampler2D TextureSampler;
 uniform vec3 planetColor;
 uniform vec3 light_color;
 uniform vec3 light_position;
@@ -22,7 +24,7 @@ void main() {
 
   vec3 camera_Position = pass_Camera_Position;
   
-  vec3 transformed_light_position = (passViewMatrix * vec4(light_position,1.0)).xyz;
+  vec3 transformed_light_position = (pass_ViewMatrix * vec4(light_position,1.0)).xyz;
 
   vec3 light_Direction = transformed_light_position - pass_Position;
   vec3 view_Direction = camera_Position - pass_Position;
@@ -36,6 +38,8 @@ void main() {
   vec3 ambient = ambient_strength * light_color;
   vec3 diffuse = diffuse_light_strength * light_color;
   vec3 specular =  specular_light_strength * specular_color;
+  vec4 planetTexture = texture(TextureSampler, pass_TexCoord);
 
-  out_Color = vec4((ambient + diffuse) * planetColor + specular * light_color, 1.0);
+  out_Color = planetTexture * vec4(ambient + diffuse + specular * light_color,1.0);
+  //vec4((ambient + diffuse) * planetColor + specular * light_color, 1.0);
 }

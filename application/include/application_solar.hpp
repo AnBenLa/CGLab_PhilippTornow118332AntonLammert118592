@@ -35,14 +35,26 @@ class ApplicationSolar : public Application {
   void uploadProjection();
   // upload view matrix
   void uploadView();
-
+  // upload texture data
+  void uploadTextureData();
+  
+  //texture init
+  void initializeTextures();
+  void applyTextures();
+  
   // cpu representation of model
   model_object planet_object;
   model_object stars_object;
   model_object orbits_object;
 
+  // vector of planet names
+  std::vector<std::string> m_planet_names;
+
   // scenegraph
   SceneGraph* scenegraph_;
+
+  // container for textures
+  std::map<std::string, unsigned int> m_textures{};
 
   std::string m_current_planet_shader;
 

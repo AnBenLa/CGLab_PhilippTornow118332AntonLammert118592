@@ -4,6 +4,9 @@
 #include "utils.hpp"
 #include "shader_loader.hpp"
 #include "model_loader.hpp"
+#include "texture_loader.hpp"
+
+#include "pixel_data.hpp"
 
 #include <glbinding/gl/gl.h>
 // use gl definitions from glbinding 
@@ -18,6 +21,8 @@ using namespace gl;
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <algorithm>
+
 
 ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  :Application{resource_path}
@@ -26,11 +31,25 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,orbits_object{}
  ,m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 4.0f})}
  ,m_view_projection{utils::calculate_projection_matrix(initial_aspect_ratio)}
+ ,m_textures{}
  ,m_current_planet_shader{"planet"}
+ ,m_planet_names{
+		"sun",
+		"uranus",
+		"venus",
+		"earth",
+		"moon",
+		"mercury",
+		"mars",
+		"jupiter",
+		"saturn",
+		"neptune"
+	}
 {
 	initializeSceneGraph();
 	initializeStars();
 	initializePlanets();
+	initializeTextures();
 	initializeOrbits();
 	initializeShaderPrograms();
 }
@@ -58,7 +77,7 @@ void ApplicationSolar::initializeSceneGraph() {
 	scenegraph_ = SceneGraph::getInstance();
 
 	// call model_loader
-	model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
+	model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD);
 	auto root = scenegraph_->getRoot();
 
 	// init a node for all stars
@@ -86,10 +105,10 @@ void ApplicationSolar::initializeSceneGraph() {
 	moon_hold->addChildren(moon_geom);
 	moon_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.05f,0.05f,0.05f }));
 
-	auto merc_hold = std::make_shared<Node>("merc_hold", root);
+	auto merc_hold = std::make_shared<Node>("mercury_hold", root);
 	root->addChildren(merc_hold);
 	merc_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 4.8f,0.0f,0.0f }));
-	auto merc_geom = std::make_shared<GeometryNode>("merc_geom", merc_hold, planet_model);
+	auto merc_geom = std::make_shared<GeometryNode>("mercury_geom", merc_hold, planet_model);
 	merc_hold->addChildren(merc_geom);
 	merc_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.125f,0.125f,0.125f }));
 
@@ -107,31 +126,31 @@ void ApplicationSolar::initializeSceneGraph() {
 	mars_hold->addChildren(mars_geom);
 	mars_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.175f,0.175f,0.175f }));
 
-	auto jupit_hold = std::make_shared<Node>("jupit_hold", root);
+	auto jupit_hold = std::make_shared<Node>("jupiter_hold", root);
 	root->addChildren(jupit_hold);
 	jupit_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 10.2f,0.0f,0.0f }));
-	auto jupit_geom = std::make_shared<GeometryNode>("jupit_geom", jupit_hold, planet_model);
+	auto jupit_geom = std::make_shared<GeometryNode>("jupiter_geom", jupit_hold, planet_model);
 	jupit_hold->addChildren(jupit_geom);
 	jupit_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.2f,0.2f,0.2f }));
 
-	auto sat_hold = std::make_shared<Node>("sat_hold", root);
+	auto sat_hold = std::make_shared<Node>("saturn_hold", root);
 	root->addChildren(sat_hold);
 	sat_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 7.5f,0.0f,0.0f }));
-	auto sat_geom = std::make_shared<GeometryNode>("sat_geom", sat_hold, planet_model);
+	auto sat_geom = std::make_shared<GeometryNode>("saturn_geom", sat_hold, planet_model);
 	sat_hold->addChildren(sat_geom);
 	sat_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.1f,0.1f,0.1f }));
 
-	auto uran_hold = std::make_shared<Node>("uran_hold", root);
+	auto uran_hold = std::make_shared<Node>("uranus_hold", root);
 	root->addChildren(uran_hold);
 	uran_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 2.1f,0.0f,0.0f }));
-	auto uran_geom = std::make_shared<GeometryNode>("uran_geom", uran_hold, planet_model);
+	auto uran_geom = std::make_shared<GeometryNode>("uranus_geom", uran_hold, planet_model);
 	uran_hold->addChildren(uran_geom);
 	uran_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.125f,0.125f,0.125f }));
 	
-	auto nept_hold = std::make_shared<Node>("nept_hold", root);
+	auto nept_hold = std::make_shared<Node>("neptune_hold", root);
 	root->addChildren(nept_hold);
 	nept_hold->setLocalTransform(glm::translate({}, glm::fvec3{ 8.4f,0.0f,0.0f }));
-	auto nept_geom = std::make_shared<GeometryNode>("nept_geom", nept_hold, planet_model);
+	auto nept_geom = std::make_shared<GeometryNode>("neptune_geom", nept_hold, planet_model);
 	nept_hold->addChildren(nept_geom);
 	nept_geom->setLocalTransform(glm::scale({}, glm::fvec3{ 0.1f,0.1f,0.1f }));
 
@@ -207,6 +226,11 @@ void ApplicationSolar::uploadProjection() {
 
   glUniformMatrix4fv(m_shaders.at("orbits").u_locs.at("ProjectionMatrix"),
 	  1, GL_FALSE, glm::value_ptr(m_view_projection));
+}
+
+// update/upload texture data
+void ApplicationSolar::uploadTextureData() {
+
 }
 
 // update uniform locations
@@ -303,7 +327,7 @@ void ApplicationSolar::initializeStars(){
 }
 
 void ApplicationSolar::initializePlanets(){
-  model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
+  model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD);
 
   // generate vertex array object
   glGenVertexArrays(1, &planet_object.vertex_AO);
@@ -325,6 +349,10 @@ void ApplicationSolar::initializePlanets(){
   glEnableVertexAttribArray(1);
   // second attribute is 3 floats with no offset & stride
   glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::NORMAL]);
+  // activate third attribute on gpu
+  glEnableVertexAttribArray(2);
+  // third attribute is 2 floats with no offset & stride
+  glVertexAttribPointer(1, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
 
    // generate generic buffer
   glGenBuffers(1, &planet_object.element_BO);
@@ -345,24 +373,12 @@ void ApplicationSolar::initializeOrbits(){
 	int num_planets = 10;
 	int num_orbit_points = 65;
 	float angle = 0.1f;
-	//specify the names of plante nodes that should get an orbit
-	std::string planets[] = {
-	"sun_geom",
-	"uran_geom",
-	"venus_geom",
-	"earth_geom",
-	"moon_geom",
-	"merc_geom",
-	"mars_geom",
-	"jupit_geom",
-	"sat_geom",
-	"nept_geom" };
 	
 	std::vector<GLfloat> orbit;
 	//for each planet calculate the position of the points on the orbit
-	for (auto pl : planets) {
+	for (auto pl : m_planet_names) {
 		orbit.clear();
-		auto planet_geom = root->getChildren(pl);
+		auto planet_geom = root->getChildren(pl+"_geom");
 		auto planet_hold = planet_geom->getParent();
 		//create a rotation matrix to calculate the points on the orbit
 		auto rot_mat = glm::rotate(glm::mat4x4{}, angle, glm::fvec3{ 0.0f,1.0f,0.0f });
@@ -379,7 +395,7 @@ void ApplicationSolar::initializeOrbits(){
 		orbit_model.data = orbit;
 		orbit_model.vertex_num = num_orbit_points;
 		//create a new geometry node using the orbit model
-		auto orbit_node = std::make_shared<GeometryNode>(pl + "_orbit", orbit_model);
+		auto orbit_node = std::make_shared<GeometryNode>(pl+"_geom" + "_orbit", orbit_model);
 		//add the new node to the scenegraph
 		planet_hold->getParent()->addChildren(orbit_node);
 		orbit_node->setParent(planet_hold->getParent());
@@ -427,37 +443,27 @@ void ApplicationSolar::renderPlanets(std::string const& planet_shader)const{
 
 	auto root = scenegraph_->getRoot();
 
-	std::string planets[] = {
-		"sun_geom",
-		"uran_geom",
-		"venus_geom",
-		"earth_geom",
-		"moon_geom",
-		"merc_geom",
-		"mars_geom", 
-		"jupit_geom", 
-		"sat_geom", 
-		"nept_geom" };
-
-	std::map<std::string,color> color_map;
+	std::map<std::string, color> color_map;
 	color_map.insert({ "sun_geom",{255, 255, 0} });
-	color_map.insert({ "uran_geom",{188, 255, 252}});
+	color_map.insert({ "uranus_geom",{188, 255, 252}});
 	color_map.insert({ "venus_geom",{251, 213, 152} });
 	color_map.insert({ "earth_geom",{78, 153, 255} });
 	color_map.insert({ "moon_geom",{219, 219, 219} });
-	color_map.insert({ "merc_geom",{157, 157, 157} });
+	color_map.insert({ "mercury_geom",{157, 157, 157} });
 	color_map.insert({ "mars_geom",{229, 141, 0} });
-	color_map.insert({ "jupit_geom",{255, 207, 128} });
-	color_map.insert({ "sat_geom",{229, 212, 186} });
-	color_map.insert({ "nept_geom",{99, 204, 251} });
+	color_map.insert({ "jupiter_geom",{255, 207, 128} });
+	color_map.insert({ "saturn_geom",{229, 212, 186} });
+	color_map.insert({ "neptune_geom",{99, 204, 251} });
+	unsigned int index = 0;
 
 	// render every planet
-	for (int i = 0; i < 10; ++i) {
-		auto planet = root->getChildren(planets[i]);
+	for (std::string planet_name :  m_planet_names) {
+		auto planet = root->getChildren(planet_name+"_geom");
 		glm::mat4 pl = planet->getParent()->getLocalTransform();
 		glm::mat4 rm = {};
-		if (i != 4) {
-			rm = glm::rotate(glm::mat4x4{}, 0.0005f + (float)(10-i)*0.00001f, glm::fvec3{ 0.0f,1.0f,0.0f });
+		if (planet_name != "moon") {
+
+			rm = glm::rotate(glm::mat4x4{}, 0.0005f + (float)(10-index*0.00001f), glm::fvec3{ 0.0f,1.0f,0.0f });
 		}
 		else {
 			rm = glm::rotate(glm::mat4x4{}, 0.005f, glm::fvec3{ 0.0f,1.0f,0.0f });
@@ -480,8 +486,19 @@ void ApplicationSolar::renderPlanets(std::string const& planet_shader)const{
 		// bind the VAO to draw
 		glBindVertexArray(planet_object.vertex_AO);
 
+		unsigned int texture = m_textures.at(planet_name+"_tex");
+
+		//add sampler
+		glActiveTexture(GL_TEXTURE1);
+		// bind texture
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		int samplerLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle,"TextureSampler");
+		glUniform1i(samplerLocation, texture);
+
+		// add planet color
 		int planetColorLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle, "planetColor");
-		color planetColor = color_map[planets[i]];
+		color planetColor = color_map[planet_name+"_geom"];
 		glUniform3f(planetColorLocation,planetColor.r/255.0f, planetColor.g/255.0f, planetColor.b/255.0f);
 
 		//update the position, intensity and color of the point light
@@ -502,7 +519,7 @@ void ApplicationSolar::renderPlanets(std::string const& planet_shader)const{
 
 		int ambientStrengthLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle, "ambient_strength");
 		
-		if (i == 0) {
+		if (planet_name == "sun") {
 			glUniform1f(ambientStrengthLocation, 1.0);
 		} else {
 			glUniform1f(ambientStrengthLocation, 0.1);
@@ -510,31 +527,20 @@ void ApplicationSolar::renderPlanets(std::string const& planet_shader)const{
 
 		// draw bound vertex array using bound shader
 		glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+		index++;
 	}
 }
 
 void ApplicationSolar::renderOrbits()const{
-	//get the orbit nodes by name
-	std::string orbits[] = {
-	"sun_geom_orbit",
-	"uran_geom_orbit",
-	"venus_geom_orbit",
-	"earth_geom_orbit",
-	"moon_geom_orbit",
-	"merc_geom_orbit",
-	"mars_geom_orbit",
-	"jupit_geom_orbit",
-	"sat_geom_orbit",
-	"nept_geom_orbit" };
 
 	//declare the shader we want to use
 	glUseProgram(m_shaders.at("orbits").handle);
 
 	//for every orbit of a planet draw it
-	for (auto& orbit_name : orbits) {
+	for (auto& planet_name : m_planet_names) {
 
 		//get the geometry of the orbit that is stored in the node
-		auto orbit = scenegraph_->getRoot()->getChildren(orbit_name);
+		auto orbit = scenegraph_->getRoot()->getChildren(planet_name+"_geom_orbit");
 		auto orbit_geom = std::static_pointer_cast<GeometryNode> (orbit);
 		auto orbit_world_transform = orbit->getWorldTransform();
 		model orbit_model = orbit_geom->getGeometry();
@@ -555,6 +561,56 @@ void ApplicationSolar::renderOrbits()const{
 		glDrawArrays(orbits_object.draw_mode, GLint(0), orbits_object.num_elements);
 	}
 }
+
+////////////////////////////// texture stuff /////////////////
+// loads textures
+void ApplicationSolar::initializeTextures () {
+
+	int planetIndex = 0;
+	for(std::string planet : m_planet_names) {
+		pixel_data planet_data;
+		try {
+			planet_data = texture_loader::file(m_resource_path + "textures/"+planet+"map1k.jpg");
+		}
+		catch(std::exception e)
+		{
+			std::cout<<"Error loading texturefile for "+planet+". \n "+e.what()+"\n";
+		}
+
+		pixel_data data = planet_data;
+		int width = data.width;
+		int height = data.height;
+		GLenum channel_number = data.channels;
+		GLenum channel_type = data.channel_type;
+
+		//glActiveTexture(GL_TEXTURE+planetIndex);
+		unsigned int texture;
+		glGenTextures(1, &texture);
+		std::string texture_name = planet+"_tex";
+		m_textures.insert({texture_name, texture});
+
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		//optional
+
+		//Texture wrapping
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		
+		//Texture filtering
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, channel_number, width, height, 0, channel_number, channel_type, data.ptr());
+		glGenerateMipmap(GL_TEXTURE_2D);
+		planetIndex++;
+	}
+}
+
+void ApplicationSolar::applyTextures () {
+
+}
+
 
 ///////////////////////////// callback functions for window events ////////////
 // handle key input
@@ -615,7 +671,6 @@ void ApplicationSolar::resizeCallback(unsigned width, unsigned height) {
   // upload new projection matrix
   uploadProjection();
 }
-
 
 // exe entry point
 int main(int argc, char* argv[]) {
