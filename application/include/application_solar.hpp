@@ -53,7 +53,7 @@ class ApplicationSolar : public Application {
   SceneGraph* scenegraph_;
 
   // container for textures
-  std::map<std::string, unsigned int> m_textures{};
+  std::map<std::string, texture_object> m_textures{};
 
   std::string m_current_planet_shader;
 

@@ -486,15 +486,15 @@ void ApplicationSolar::renderPlanets(std::string const& planet_shader)const{
 		// bind the VAO to draw
 		glBindVertexArray(planet_object.vertex_AO);
 
-		unsigned int texture = m_textures.at(planet_name+"_tex");
+		texture_object texture = m_textures.at(planet_name+"_tex");
 
 		//add sampler
 		glActiveTexture(GL_TEXTURE1);
 		// bind texture
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glBindTexture(texture.target, texture.handle);
 
 		int samplerLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle,"TextureSampler");
-		glUniform1i(samplerLocation, texture);
+		glUniform1i(samplerLocation, texture.handle);
 
 		// add planet color
 		int planetColorLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle, "planetColor");
@@ -584,18 +584,19 @@ void ApplicationSolar::initializeTextures () {
 		GLenum channel_type = data.channel_type;
 
 		//glActiveTexture(GL_TEXTURE+planetIndex);
-		unsigned int texture;
-		glGenTextures(1, &texture);
+		texture_object texture;
+		glGenTextures(1, &texture.handle);
+		texture.target = GL_TEXTURE_2D;
 		std::string texture_name = planet+"_tex";
 		m_textures.insert({texture_name, texture});
 
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glBindTexture(texture.target, texture.handle);
 
 		//optional
 
 		//Texture wrapping
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		
 		//Texture filtering
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
