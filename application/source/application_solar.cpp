@@ -463,7 +463,7 @@ void ApplicationSolar::renderPlanets(std::string const& planet_shader)const{
 		glm::mat4 rm = {};
 		if (planet_name != "moon") {
 
-			rm = glm::rotate(glm::mat4x4{}, 0.0005f + (float)(10-index*0.00001f), glm::fvec3{ 0.0f,1.0f,0.0f });
+			rm = glm::rotate(glm::mat4x4{}, 0.0005f + (float)(10-index)*0.00001f, glm::fvec3{ 0.0f,1.0f,0.0f });
 		}
 		else {
 			rm = glm::rotate(glm::mat4x4{}, 0.005f, glm::fvec3{ 0.0f,1.0f,0.0f });
