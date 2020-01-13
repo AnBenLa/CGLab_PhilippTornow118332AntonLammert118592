@@ -251,6 +251,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
   m_shaders.at("planet").u_locs["ViewMatrix"] = -1;
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("planet").u_locs["TextureSampler"] = -1;
 
   // store toon shader
   m_shaders.emplace("toon", shader_program{{{GL_VERTEX_SHADER, m_resource_path + "shaders/toon.vert"},
@@ -261,6 +262,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("toon").u_locs["ModelMatrix"] = -1;
   m_shaders.at("toon").u_locs["ViewMatrix"] = -1;
   m_shaders.at("toon").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("planet").u_locs["TextureSampler"] = -1;
 
   // store star shader
   m_shaders.emplace("stars", shader_program{{{GL_VERTEX_SHADER,m_resource_path + "shaders/vao.vert"},
@@ -352,7 +354,7 @@ void ApplicationSolar::initializePlanets(){
   // activate third attribute on gpu
   glEnableVertexAttribArray(2);
   // third attribute is 2 floats with no offset & stride
-  glVertexAttribPointer(1, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
+  glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
 
    // generate generic buffer
   glGenBuffers(1, &planet_object.element_BO);
@@ -488,11 +490,11 @@ void ApplicationSolar::renderPlanets(std::string const& planet_shader)const{
 
 		texture_object texture = m_textures.at(planet_name+"_tex");
 
-		//add sampler
-		glActiveTexture(GL_TEXTURE1);
+		glActiveTexture(GL_TEXTURE1+index);
 		// bind texture
 		glBindTexture(texture.target, texture.handle);
 
+		// add sampler
 		int samplerLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle,"TextureSampler");
 		glUniform1i(samplerLocation, texture.handle);
 
@@ -570,7 +572,7 @@ void ApplicationSolar::initializeTextures () {
 	for(std::string planet : m_planet_names) {
 		pixel_data planet_data;
 		try {
-			planet_data = texture_loader::file(m_resource_path + "textures/"+planet+"map1k.jpg");
+			planet_data = texture_loader::file(m_resource_path + "textures/"+planet+"map1k.png");
 		}
 		catch(std::exception e)
 		{
@@ -578,12 +580,13 @@ void ApplicationSolar::initializeTextures () {
 		}
 
 		pixel_data data = planet_data;
-		int width = data.width;
-		int height = data.height;
+		GLsizei width = (GLsizei) data.width;
+		GLsizei height = (GLsizei) data.height;
 		GLenum channel_number = data.channels;
 		GLenum channel_type = data.channel_type;
 
 		//glActiveTexture(GL_TEXTURE+planetIndex);
+		glActiveTexture(GL_TEXTURE1+planetIndex);
 		texture_object texture;
 		glGenTextures(1, &texture.handle);
 		texture.target = GL_TEXTURE_2D;
@@ -603,7 +606,7 @@ void ApplicationSolar::initializeTextures () {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		glTexImage2D(GL_TEXTURE_2D, 0, channel_number, width, height, 0, channel_number, channel_type, data.ptr());
-		glGenerateMipmap(GL_TEXTURE_2D);
+		//glGenerateMipmap(GL_TEXTURE_2D);
 		planetIndex++;
 	}
 }
