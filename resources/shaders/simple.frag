@@ -40,6 +40,6 @@ void main() {
   vec3 specular =  specular_light_strength * specular_color;
   vec4 planetTexture = texture(TextureSampler, pass_TexCoord);
 
-  out_Color = planetTexture * vec4(ambient + diffuse + specular * light_color,1.0);
+  out_Color = vec4(ambient + diffuse,1.0) * planetTexture + vec4(specular * light_color,1.0);
   //vec4((ambient + diffuse) * planetColor + specular * light_color, 1.0);
 }

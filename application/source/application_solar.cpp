@@ -607,10 +607,6 @@ void ApplicationSolar::initializeTextures () {
 	}
 }
 
-void ApplicationSolar::applyTextures () {
-
-}
-
 
 ///////////////////////////// callback functions for window events ////////////
 // handle key input

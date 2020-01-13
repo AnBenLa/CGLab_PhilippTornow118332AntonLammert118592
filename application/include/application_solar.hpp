@@ -40,7 +40,6 @@ class ApplicationSolar : public Application {
   
   //texture init
   void initializeTextures();
-  void applyTextures();
   
   // cpu representation of model
   model_object planet_object;
