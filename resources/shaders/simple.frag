@@ -26,11 +26,9 @@ void main() {
   
   vec3 transformed_light_position = (pass_ViewMatrix * vec4(light_position,1.0)).xyz;
 
-  vec3 light_Direction = transformed_light_position - pass_Position;
-  vec3 view_Direction = camera_Position - pass_Position;
+  vec3 light_Direction = normalize(transformed_light_position - pass_Position);
+  vec3 view_Direction = normalize(camera_Position - pass_Position);
   vec3 h = normalize(view_Direction + light_Direction);
-  view_Direction = normalize(view_Direction);
-  light_Direction = normalize(light_Direction);
 
   float diffuse_light_strength = light_strength * diffuse_reflection_factor * max(dot(normal,light_Direction),0);
   float specular_light_strength = light_strength * specular_reflection_factor * pow(max(dot(h,normal),0),n);
