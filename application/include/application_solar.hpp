@@ -35,8 +35,6 @@ class ApplicationSolar : public Application {
   void uploadProjection();
   // upload view matrix
   void uploadView();
-  // upload texture data
-  void uploadTextureData();
   
   //texture init
   void initializeTextures();
@@ -45,6 +43,7 @@ class ApplicationSolar : public Application {
   model_object planet_object;
   model_object stars_object;
   model_object orbits_object;
+  model_object skybox_object;
 
   // vector of planet names
   std::vector<std::string> m_planet_names;
@@ -54,6 +53,8 @@ class ApplicationSolar : public Application {
 
   // container for textures
   std::map<std::string, texture_object> m_textures{};
+  GLenum active_skymap_texture;
+  texture_object skymap_texture;
 
   std::string m_current_planet_shader;
 
@@ -66,9 +67,11 @@ class ApplicationSolar : public Application {
   void initializePlanets();
   void initializeStars();
   void initializeOrbits();
+  void initializeSkybox();
   void renderPlanets(std::string const& planet_shader) const;
   void renderStars() const;
   void renderOrbits() const;
+  void renderSkybox() const;
 };
 
 #endif
