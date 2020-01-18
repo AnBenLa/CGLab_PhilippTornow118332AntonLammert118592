@@ -19,8 +19,8 @@ void main() {
   vec3 specular_color = vec3(1.0,1.0,1.0);
 
   float diffuse_reflection_factor = 0.9;
-  float specular_reflection_factor = 0.9;
-  int n = 32;
+  float specular_reflection_factor = 0.4;
+  int n = 10;
 
   vec3 camera_Position = pass_Camera_Position;
   
