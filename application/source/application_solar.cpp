@@ -611,8 +611,9 @@ void ApplicationSolar::renderPlanets(std::string const& planet_shader)const{
 		glBindVertexArray(planet_object.vertex_AO);
 
 		texture_object texture = m_textures.at(planet_name+"_tex");
+		texture_object normal_texture = m_textures.at(planet_name + "_normal_tex");
 
-		glActiveTexture(GL_TEXTURE1+index);
+		glActiveTexture(GL_TEXTURE1+2*index);
 		// bind texture
 		glBindTexture(texture.target, texture.handle);
 
@@ -620,6 +621,12 @@ void ApplicationSolar::renderPlanets(std::string const& planet_shader)const{
 		int samplerLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle,"TextureSampler");
 		glUniform1i(samplerLocation, texture.handle);
 
+		glActiveTexture(GL_TEXTURE1 + 2 * index + 1);
+		glBindTexture(normal_texture.target, normal_texture.handle);
+		int normalSamplerLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle, "NormalSampler");
+		glUniform1i(normalSamplerLocation, normal_texture.handle);
+
+		
 		// add planet color
 		int planetColorLocation = glGetUniformLocation(m_shaders.at(planet_shader).handle, "planetColor");
 		color planetColor = color_map[planet_name+"_geom"];
@@ -731,7 +738,7 @@ void ApplicationSolar::initializeTextures () {
 		GLenum channel_type = planet_data.channel_type;
 
 		//glActiveTexture(GL_TEXTURE+planetIndex);
-		glActiveTexture(GL_TEXTURE1+planetIndex);
+		glActiveTexture(GL_TEXTURE1+2*planetIndex);
 		texture_object texture;
 		glGenTextures(1, &texture.handle);
 		texture.target = GL_TEXTURE_2D;
@@ -753,6 +760,44 @@ void ApplicationSolar::initializeTextures () {
 		glTexImage2D(GL_TEXTURE_2D, 0, channel_number, width, height, 0, channel_number, channel_type, planet_data.ptr());
 		//glGenerateMipmap(GL_TEXTURE_2D);
 		planetIndex++;
+
+		try {
+			planet_data = texture_loader::file(m_resource_path + "maps/" + planet + "map1k-normal.png");
+		}
+		catch (std::exception e)
+		{
+			std::cout << "Error loading texturefile for " + planet + ". \n " + e.what() + "\n";
+		}
+
+		width = (GLsizei)planet_data.width;
+		height = (GLsizei)planet_data.height;
+		channel_number = planet_data.channels;
+		channel_type = planet_data.channel_type;
+
+		//glActiveTexture(GL_TEXTURE+planetIndex);
+		glActiveTexture(GL_TEXTURE1 + 2 * planetIndex + 1);
+		texture_object normal_texture;
+		glGenTextures(1, &normal_texture.handle);
+		normal_texture.target = GL_TEXTURE_2D;
+		texture_name = planet + "_normal_tex";
+		m_textures.insert({ texture_name, normal_texture });
+
+		glBindTexture(normal_texture.target, normal_texture.handle);
+
+		//optional
+
+		//Texture wrapping
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		//Texture filteriglTexImage2D(GL_TEXTURE_2D, 0, ng
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, channel_number, width, height, 0, channel_number, channel_type, planet_data.ptr());
+		//glGenerateMipmap(GL_TEXTURE_2D);
+		planetIndex++;
+
 	}
 
 	// loads skymap textures
