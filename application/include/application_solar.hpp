@@ -48,6 +48,9 @@ class ApplicationSolar : public Application {
   // vector of planet names
   std::vector<std::string> m_planet_names;
 
+  //boolean to show if planets should move or not
+  bool time_stop = false;
+
   // scenegraph
   SceneGraph* scenegraph_;
 

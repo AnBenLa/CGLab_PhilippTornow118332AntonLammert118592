@@ -1,7 +1,7 @@
 #version 150
 
 in vec3 pass_Normal, pass_Position, pass_Camera_Position;
-in mat4 pass_ViewMatrix;
+in mat4 pass_ViewMatrix, pass_ModelMatrix, pass_NormalMatrix;
 in vec2 pass_TexCoord;
 
 out vec4 out_Color;
@@ -15,26 +15,46 @@ uniform float light_strength;
 uniform float ambient_strength;
 
 void main() {
+  //get current diffuse color
   vec4 planetTexture = texture(TextureSampler, pass_TexCoord);
+  //get current normal from normal map
   vec4 normalTexture = texture(NormalSampler, pass_TexCoord);
   
-  vec3 normal = normalize(pass_Normal);
+  //define scale of normals
+  float normalScale = 5.0;
+
+  //normalize normal texture from [-1,1] to [0,1] 
+  vec3 mapN = normalTexture.xyz * 2.0 - 1.0;
   
+  //multiply with a scaling factor
+  mapN.xy = normalScale * mapN.xy;
+
+  
+  vec3 normal = normalize(pass_Normal);
   vec3 vertex_pos = pass_Position;
 
-  float normalScale = 1.0;
+  
 
+  //calculate the difference in x and y direction on the vertex
   vec3 q0 = dFdx( vertex_pos.xyz );
   vec3 q1 = dFdy( vertex_pos.xyz );
+  
+  //calculates the difference in x and y direction on the uv plane
   vec2 st0 = dFdx( pass_TexCoord.st );
   vec2 st1 = dFdy( pass_TexCoord.st );
-  vec3 S = normalize( q0 * st1.t - q1 * st0.t );
-  vec3 T = normalize( -q0 * st1.s + q1 * st0.s );
+  
+  // direct tangent calculation using the matrix equation explained here: https://learnopengl.com/Advanced-Lighting/Normal-Mapping 
+  vec3 S = normalize(vec3(pass_NormalMatrix * vec4(normalize( q0 * st1.t - q1 * st0.t ),0.0)));
+  // direct bitangent calculation
+  vec3 T = normalize(vec3(pass_NormalMatrix * vec4(normalize( -q0 * st1.s + q1 * st0.s ),0.0)));
+  // normal
   vec3 N = normalize( normal );
-  vec3 mapN = normalTexture.xyz * 2.0 - 1.0;
-  mapN.xy = normalScale * mapN.xy;
+
+  
   mat3 tsn = mat3( S, T, N );
   normal = normalize( tsn * mapN );
+
+
 
   vec3 specular_color = vec3(1.0,1.0,1.0);
 

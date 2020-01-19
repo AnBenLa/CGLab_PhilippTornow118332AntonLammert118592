@@ -579,19 +579,18 @@ void ApplicationSolar::renderPlanets(std::string const& planet_shader)const{
 		auto planet = root->getChildren(planet_name+"_geom");
 		glm::mat4 pl = planet->getParent()->getLocalTransform();
 		glm::mat4 rm = {};
-		if (planet_name != "moon") {
 
-			rm = glm::rotate(glm::mat4x4{}, 0.0005f + (float)(10-index)*0.00001f, glm::fvec3{ 0.0f,1.0f,0.0f });
-		}
-		else {
-			rm = glm::rotate(glm::mat4x4{}, 0.005f, glm::fvec3{ 0.0f,1.0f,0.0f });
-		}
-
-		planet->getParent()->setLocalTransform(rm*pl);
-
-		if (planet_name != "sun") {
-			rm = glm::rotate(glm::mat4x4{}, 0.005f + (float)(10 - index)*0.0001f, glm::fvec3{ 0.0f,1.0f,0.0f });
-			planet->setLocalTransform(rm*planet->getLocalTransform());
+		if (!time_stop) {
+			if (planet_name != "moon") {
+				rm = glm::rotate(glm::mat4x4{}, 0.0005f + (float)(10-index)*0.00001f, glm::fvec3{ 0.0f,1.0f,0.0f });
+			} else {
+				rm = glm::rotate(glm::mat4x4{}, 0.005f, glm::fvec3{ 0.0f,1.0f,0.0f });
+			}
+			planet->getParent()->setLocalTransform(rm*pl);
+			if (planet_name != "sun") {
+				rm = glm::rotate(glm::mat4x4{}, 0.005f + (float)(10 - index)*0.0001f, glm::fvec3{ 0.0f,1.0f,0.0f });
+				planet->setLocalTransform(rm*planet->getLocalTransform());
+			}
 		}
 
 		glm::mat4x4 model_matrix = planet->getWorldTransform();
@@ -762,11 +761,12 @@ void ApplicationSolar::initializeTextures () {
 		planetIndex++;
 
 		try {
-			planet_data = texture_loader::file(m_resource_path + "maps/" + planet + "map1k-normal.png");
+			planet_data = texture_loader::file(m_resource_path + "maps/" + planet + "map2k-normal.png");
 		}
 		catch (std::exception e)
 		{
-			std::cout << "Error loading texturefile for " + planet + ". \n " + e.what() + "\n";
+			planet_data = texture_loader::file(m_resource_path + "maps/base-normal.png");
+			std::cout << "Error loading texturefile for " + planet + ". \n " + e.what() + ". Default normal was loaded.\n";
 		}
 
 		width = (GLsizei)planet_data.width;
@@ -854,8 +854,7 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   if (key == GLFW_KEY_W  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.1f});
     uploadView();
-  }
-  else if (key == GLFW_KEY_S  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+  } else if (key == GLFW_KEY_S  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.1f});
     uploadView();
   }
@@ -863,8 +862,7 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)){
   	m_view_transform = glm::translate(m_view_transform, glm::fvec3{-0.1f,0.0f,0.0f});
   	uploadView();
-  }
-  else if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)){
+  } else if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)){
   	m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.1f,0.0f,0.0f});
   	uploadView();
   }
@@ -872,10 +870,12 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   if (key == GLFW_KEY_1 && (action == GLFW_PRESS)){
   	m_current_planet_shader = "planet";
   	uploadView();
-  }
-  else if (key == GLFW_KEY_2 && (action == GLFW_PRESS)){
+  } else if (key == GLFW_KEY_2 && (action == GLFW_PRESS)){
   	m_current_planet_shader = "toon";
   	uploadView();
+  } else if (key == GLFW_KEY_3 && (action == GLFW_PRESS)) {
+	  time_stop = !time_stop;
+	  uploadView();
   }
 }
 
