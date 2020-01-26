@@ -20,6 +20,7 @@ using namespace gl;
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <fstream>
 #include <iostream>
 #include <algorithm>
 
@@ -459,50 +460,17 @@ void ApplicationSolar::initializeOrbits(){
 
 void ApplicationSolar::initializeSkybox() {
 
-	std::vector<GLfloat> skybox = {
-    	// positions          
-    	-1.0f,  1.0f, -1.0f,
-    	-1.0f, -1.0f, -1.0f,
-    	 1.0f, -1.0f, -1.0f,
-    	 1.0f, -1.0f, -1.0f,
-    	 1.0f,  1.0f, -1.0f,
-    	-1.0f,  1.0f, -1.0f,
-	
-	    -1.0f, -1.0f,  1.0f,
-	    -1.0f, -1.0f, -1.0f,
-	    -1.0f,  1.0f, -1.0f,
-	    -1.0f,  1.0f, -1.0f,
-	    -1.0f,  1.0f,  1.0f,
-	    -1.0f, -1.0f,  1.0f,
-	
-	    1.0f, -1.0f, -1.0f,
-	    1.0f, -1.0f,  1.0f,
-	    1.0f,  1.0f,  1.0f,
-	    1.0f,  1.0f,  1.0f,
-	    1.0f,  1.0f, -1.0f,
-	    1.0f, -1.0f, -1.0f,
-	
-	    -1.0f, -1.0f,  1.0f,
-	    -1.0f,  1.0f,  1.0f,
-	    1.0f,  1.0f,  1.0f,
-	    1.0f,  1.0f,  1.0f,
-	    1.0f, -1.0f,  1.0f,
-	    -1.0f, -1.0f,  1.0f,
-	
-	    -1.0f,  1.0f, -1.0f,
-	    1.0f,  1.0f, -1.0f,
-	    1.0f,  1.0f,  1.0f,
-	    1.0f,  1.0f,  1.0f,
-	    -1.0f,  1.0f,  1.0f,
-	    -1.0f,  1.0f, -1.0f,
-	
-	    -1.0f, -1.0f, -1.0f,
-	    -1.0f, -1.0f,  1.0f,
-	    1.0f, -1.0f, -1.0f,
-	    1.0f, -1.0f, -1.0f,
-	    -1.0f, -1.0f,  1.0f,
-    	1.0f, -1.0f,  1.0f
-	};
+	std::vector<GLfloat> skybox;
+	skybox.reserve(36*3*sizeof(GLfloat)); 
+	std::ifstream cin(m_resource_path + "models/skybox.txt");
+	unsigned int number_points = 36*3;
+    while(number_points--) {
+    	float x, y ,z;
+    	cin>>x>>y>>z;
+    	skybox.push_back((GLfloat)x);
+    	skybox.push_back((GLfloat)y);
+    	skybox.push_back((GLfloat)z);
+    }
 
 	model skybox_model{};
 	skybox_model.data = skybox;
