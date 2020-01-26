@@ -463,8 +463,7 @@ void ApplicationSolar::initializeSkybox() {
 	std::vector<GLfloat> skybox;
 	skybox.reserve(36*3*sizeof(GLfloat)); 
 	std::ifstream cin(m_resource_path + "models/skybox.txt");
-	unsigned int number_points = 36*3;
-    while(number_points--) {
+    while(!cin.eof()) {
     	float x, y ,z;
     	cin>>x>>y>>z;
     	skybox.push_back((GLfloat)x);
