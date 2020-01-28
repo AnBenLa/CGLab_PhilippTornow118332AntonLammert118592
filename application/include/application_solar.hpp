@@ -86,6 +86,8 @@ class ApplicationSolar : public Application {
   bool vertical_mirroring = false;
   bool greyscale = false;
   bool blur = false;
+  unsigned img_width;
+  unsigned img_height;
 };
 
 #endif

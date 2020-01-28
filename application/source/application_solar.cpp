@@ -49,6 +49,8 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
 		"saturn",
 		"neptune"
 	}
+ ,img_width{initial_resolution.x}
+ ,img_height{initial_resolution.y}
 {
 	initializeSceneGraph();
 	initializeTextures();
@@ -247,6 +249,7 @@ void ApplicationSolar::uploadView() {
   glUniform1i(m_shaders.at("simple_quad").u_locs.at("verticalMirroring"),vertical_mirroring);
   glUniform1i(m_shaders.at("simple_quad").u_locs.at("greyscale"),greyscale);
   glUniform1i(m_shaders.at("simple_quad").u_locs.at("blur"),blur);
+  glUniform2f(m_shaders.at("simple_quad").u_locs.at("textureSize"),img_width,img_height);
 }
 
 void ApplicationSolar::uploadProjection() {
@@ -346,6 +349,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("simple_quad").u_locs["verticalMirroring"]= 0;
   m_shaders.at("simple_quad").u_locs["greyscale"]= 0;
   m_shaders.at("simple_quad").u_locs["blur"]= 0;
+  m_shaders.at("simple_quad").u_locs["textureSize"] = -1;
 }
 
 void ApplicationSolar::initializeScreenquad(){
@@ -377,7 +381,7 @@ void ApplicationSolar::initializeScreenquad(){
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, GLsizei(4 * sizeof(float)), (void*)(2 * sizeof(float)));
 
 	//specify the draw mode and the number of elements
-	screenquad_object.draw_mode = GL_TRIANGLES;
+	screenquad_object.draw_mode = GL_TRIANGLE_STRIP;
 	screenquad_object.num_elements = GLsizei(quad.size()/4);
 }
 
@@ -985,16 +989,16 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   }
 
   //postprocessing
-  if (key == GLFW_KEY_4 && (action == GLFW_PRESS)){
+  if (key == GLFW_KEY_8 && (action == GLFW_PRESS)){
   	horizontal_mirroring = !horizontal_mirroring;
   	uploadView();
-  } else if (key == GLFW_KEY_5 && (action == GLFW_PRESS)){
+  } else if (key == GLFW_KEY_9 && (action == GLFW_PRESS)){
   	vertical_mirroring = !vertical_mirroring;
   	uploadView();
-  } else if (key == GLFW_KEY_6 && (action == GLFW_PRESS)){
+  } else if (key == GLFW_KEY_7 && (action == GLFW_PRESS)){
   	greyscale = !greyscale;
   	uploadView();
-  } else if (key == GLFW_KEY_7 && (action == GLFW_PRESS)){
+  } else if (key == GLFW_KEY_0 && (action == GLFW_PRESS)){
   	blur = !blur;
   	uploadView();
   }
@@ -1026,6 +1030,8 @@ void ApplicationSolar::resizeCallback(unsigned width, unsigned height) {
   // upload new projection matrix
   uploadProjection();
   initializeFramebuffer(width, height);
+  img_width = width;
+  img_height = height;
 }
 
 // exe entry point
