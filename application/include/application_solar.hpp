@@ -80,6 +80,12 @@ class ApplicationSolar : public Application {
   void renderOrbits() const;
   void renderSkybox() const;
   void renderQuad() const;
+
+  private:
+  bool horizontal_mirroring = false;
+  bool vertical_mirroring = false;
+  bool greyscale = false;
+  bool blur = false;
 };
 
 #endif

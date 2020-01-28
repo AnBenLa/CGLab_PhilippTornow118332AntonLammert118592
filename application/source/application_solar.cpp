@@ -240,6 +240,13 @@ void ApplicationSolar::uploadView() {
 
   glUniformMatrix4fv(m_shaders.at("skybox").u_locs.at("ViewMatrix"),
   	  				 1, GL_FALSE, glm::value_ptr(view_matrix));
+
+  glUseProgram(m_shaders.at("simple_quad").handle);
+
+  glUniform1i(m_shaders.at("simple_quad").u_locs.at("horizontalMirroring"),horizontal_mirroring);
+  glUniform1i(m_shaders.at("simple_quad").u_locs.at("verticalMirroring"),vertical_mirroring);
+  glUniform1i(m_shaders.at("simple_quad").u_locs.at("greyscale"),greyscale);
+  glUniform1i(m_shaders.at("simple_quad").u_locs.at("blur"),blur);
 }
 
 void ApplicationSolar::uploadProjection() {
@@ -335,6 +342,10 @@ void ApplicationSolar::initializeShaderPrograms() {
 												 {GL_FRAGMENT_SHADER, m_resource_path + "shaders/simple_quad.frag"}}});
 
   m_shaders.at("simple_quad").u_locs["screenTexture"] = -1;
+  m_shaders.at("simple_quad").u_locs["horizontalMirroring"]= 0;
+  m_shaders.at("simple_quad").u_locs["verticalMirroring"]= 0;
+  m_shaders.at("simple_quad").u_locs["greyscale"]= 0;
+  m_shaders.at("simple_quad").u_locs["blur"]= 0;
 }
 
 void ApplicationSolar::initializeScreenquad(){
@@ -944,6 +955,7 @@ bool ApplicationSolar::initializeFramebuffer(unsigned width, unsigned height) {
 void ApplicationSolar::keyCallback(int key, int action, int mods) {
 
 // differentiate inputs and apply corresponding translation
+  //back and forward
   if (key == GLFW_KEY_W  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.1f});
     uploadView();
@@ -951,7 +963,7 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
     m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.1f});
     uploadView();
   }
-
+  //left and right
   if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)){
   	m_view_transform = glm::translate(m_view_transform, glm::fvec3{-0.1f,0.0f,0.0f});
   	uploadView();
@@ -960,6 +972,7 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   	uploadView();
   }
 
+  //shading
   if (key == GLFW_KEY_1 && (action == GLFW_PRESS)){
   	m_current_planet_shader = "planet";
   	uploadView();
@@ -969,6 +982,21 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   } else if (key == GLFW_KEY_3 && (action == GLFW_PRESS)) {
 	  time_stop = !time_stop;
 	  uploadView();
+  }
+
+  //postprocessing
+  if (key == GLFW_KEY_4 && (action == GLFW_PRESS)){
+  	horizontal_mirroring = !horizontal_mirroring;
+  	uploadView();
+  } else if (key == GLFW_KEY_5 && (action == GLFW_PRESS)){
+  	vertical_mirroring = !vertical_mirroring;
+  	uploadView();
+  } else if (key == GLFW_KEY_6 && (action == GLFW_PRESS)){
+  	greyscale = !greyscale;
+  	uploadView();
+  } else if (key == GLFW_KEY_7 && (action == GLFW_PRESS)){
+  	blur = !blur;
+  	uploadView();
   }
 }
 
